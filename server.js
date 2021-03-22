@@ -20,14 +20,24 @@ app.use(cors())
 app.use(express.json({type: 'application/json'}))
 app.use(express.static('public')); // for serving the HTML file
 
-var upload = multer({ dest: __dirname + '/public/uploads/' });
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, __dirname + '/public/uploads/')
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + '-' + Date.now() + ".mp4")
+  }
+})
+var upload = multer({storage});
 var type = upload.single('upl');
 
 app.post('/api/test', type, function (req, res) {
    console.log(req.body);
    console.log(req.file);
    // do stuff with file
-   res.send('POST request to the homepage')
+   res.send({
+     url: `http://192.168.31.80:8888/uploads/${req.file.filename}`,
+   })
 });
 
 app.get('/', type, function (req, res) {
